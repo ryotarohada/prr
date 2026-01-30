@@ -1,49 +1,85 @@
-# prr - Pull Request Reminder
+# prr
 
-A macOS app to monitor GitHub PRs where you are assigned as a reviewer.
-
-![prr Icon](app-bg-icon.png)
+Pull Request Reminder - CLI tool for tracking GitHub PRs awaiting your review.
 
 ## Features
 
-- View pending review PRs at a glance
+- Watch mode: continuously monitors PRs and sends macOS notifications
+- View pending review PRs in your terminal
 - Desktop notifications for new PRs
-- Periodic reminders for pending reviews
-- Click PR card to open in GitHub
+- Simple configuration management
 
 ## Installation
 
-Download the DMG file from [Releases](https://github.com/ryotarohada/prr/releases).
+```bash
+# Clone and install
+git clone https://github.com/ryotarohada/prr.git
+cd prr
+pnpm install
+
+# Build and link globally
+pnpm build
+npm link
+```
 
 ## Setup
 
-1. Launch the app
-2. Open Settings and enter your GitHub Personal Access Token
-   - Required scopes: `repo`, `read:user`
-   - [Create token here](https://github.com/settings/tokens)
-3. Add repositories to watch (`owner/repo` format)
-4. Save
+```bash
+# Interactive setup
+prr config
+```
+
+You'll need a GitHub Personal Access Token:
+
+- Required scopes: `repo`, `read:user`
+- [Create token here](https://github.com/settings/tokens)
+
+## Usage
+
+```bash
+# Start watch mode (default)
+prr
+
+# List PRs once
+prr list
+
+# Show current configuration
+prr status
+```
+
+## Commands
+
+| Command                      | Description           |
+| ---------------------------- | --------------------- |
+| `prr`                        | Start watch mode      |
+| `prr watch`                  | Start watch mode      |
+| `prr list`                   | List pending PRs once |
+| `prr status`                 | Show current config   |
+| `prr config`                 | Interactive setup     |
+| `prr config set-token`       | Set GitHub token      |
+| `prr config add-repo <repo>` | Add repository        |
+| `prr config rm-repo <repo>`  | Remove repository     |
+| `prr config repos`           | List repositories     |
+| `prr config interval <min>`  | Set check interval    |
+| `prr config clear`           | Clear configuration   |
+| `prr --help`                 | Show help             |
 
 ## Development
 
 ```bash
-# Install dependencies
-pnpm install
+# Run in development mode
+pnpm dev
 
-# Start in development mode
-pnpm start
-
-# Build for macOS
-pnpm dist:mac
+# Build
+pnpm build
 ```
 
 ## Tech Stack
 
-- Electron
-- React
-- Tailwind CSS
+- TypeScript
 - Octokit (GitHub API)
+- conf (configuration storage)
 
 ## License
 
-ISC
+MIT

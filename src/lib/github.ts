@@ -1,26 +1,30 @@
-const { Octokit } = require('@octokit/rest');
+import { Octokit } from '@octokit/rest';
+import type { PullRequest, PRGroups, ReviewState, TokenValidationResult } from '../types/index.js';
 
-let octokit = null;
-let currentUser = null;
+let octokit: Octokit | null = null;
+let currentUser: { login: string } | null = null;
 
-const initOctokit = (token) => {
+export function initOctokit(token: string): void {
   octokit = new Octokit({ auth: token });
   currentUser = null;
-};
+}
 
-const getCurrentUser = async () => {
+export async function getCurrentUser(): Promise<{ login: string }> {
   if (!octokit) throw new Error('GitHub token not configured');
   if (currentUser) return currentUser;
 
   const { data } = await octokit.users.getAuthenticated();
   currentUser = data;
   return currentUser;
-};
+}
 
-const getReviewState = (reviews, currentUserLogin) => {
+function getReviewState(
+  reviews: Array<{ user: { login: string } | null; state: string; submitted_at?: string }>,
+  currentUserLogin: string
+): ReviewState {
   const userReviews = reviews
-    .filter((r) => r.user.login === currentUserLogin)
-    .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+    .filter((r) => r.user?.login === currentUserLogin)
+    .sort((a, b) => new Date(b.submitted_at || 0).getTime() - new Date(a.submitted_at || 0).getTime());
 
   if (userReviews.length === 0) return 'PENDING';
 
@@ -33,13 +37,13 @@ const getReviewState = (reviews, currentUserLogin) => {
     default:
       return 'PENDING';
   }
-};
+}
 
-const fetchPullRequests = async (repositories) => {
+export async function fetchPullRequests(repositories: string[]): Promise<PRGroups> {
   if (!octokit) throw new Error('GitHub token not configured');
 
   const user = await getCurrentUser();
-  const allPRs = [];
+  const allPRs: PullRequest[] = [];
 
   for (const repo of repositories) {
     const [owner, repoName] = repo.split('/');
@@ -54,7 +58,6 @@ const fetchPullRequests = async (repositories) => {
       });
 
       for (const pr of pulls) {
-        // requested_reviewersに自分がいる場合のみ対象
         const isRequestedReviewer = pr.requested_reviewers?.some(
           (r) => r.login === user.login
         );
@@ -76,17 +79,18 @@ const fetchPullRequests = async (repositories) => {
           url: pr.html_url,
           repository: repo,
           author: {
-            login: pr.user.login,
-            avatarUrl: pr.user.avatar_url,
+            login: pr.user?.login || 'unknown',
+            avatarUrl: pr.user?.avatar_url || '',
           },
           createdAt: pr.created_at,
           updatedAt: pr.updated_at,
-          draft: pr.draft,
+          draft: pr.draft || false,
           reviewState,
         });
       }
     } catch (error) {
-      console.error(`Error fetching PRs from ${repo}:`, error.message);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`Error fetching PRs from ${repo}: ${message}`);
     }
   }
 
@@ -95,21 +99,15 @@ const fetchPullRequests = async (repositories) => {
     changesRequested: allPRs.filter((pr) => pr.reviewState === 'CHANGES_REQUESTED'),
     approved: allPRs.filter((pr) => pr.reviewState === 'APPROVED'),
   };
-};
+}
 
-const validateToken = async (token) => {
+export async function validateToken(token: string): Promise<TokenValidationResult> {
   try {
     const testOctokit = new Octokit({ auth: token });
     const { data } = await testOctokit.users.getAuthenticated();
     return { valid: true, user: data };
   } catch (error) {
-    return { valid: false, error: error.message };
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { valid: false, error: message };
   }
-};
-
-module.exports = {
-  initOctokit,
-  getCurrentUser,
-  fetchPullRequests,
-  validateToken,
-};
+}

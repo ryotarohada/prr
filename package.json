@@ -1,53 +1,29 @@
 {
   "name": "prr",
-  "version": "0.1.0",
-  "productName": "prr",
-  "main": "main.js",
+  "version": "1.0.0",
+  "description": "Pull Request Reminder - CLI tool for tracking PRs awaiting your review",
+  "type": "module",
+  "bin": {
+    "prr": "./dist/index.js"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "vite build && electron .",
-    "electron": "electron .",
-    "dist": "pnpm build && electron-builder",
-    "dist:mac": "pnpm build && electron-builder --mac"
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
   },
-  "keywords": [],
+  "keywords": ["github", "pull-request", "cli", "review"],
   "author": "",
-  "license": "ISC",
-  "description": "Pull Request Reminder",
-  "build": {
-    "appId": "com.prr.app",
-    "productName": "prr",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "main.js",
-      "preload.js",
-      "src/**/*",
-      "app-bg-icon.png"
-    ],
-    "mac": {
-      "category": "public.app-category.developer-tools",
-      "icon": "app-bg-icon.png",
-      "target": ["dmg"]
-    }
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.7.0",
-    "autoprefixer": "^10.4.23",
-    "electron": "^40.0.0",
-    "electron-builder": "^26.4.0",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.19",
-    "vite": "^5.4.21"
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
-    "electron-store": "^8.2.0",
-    "lucide-react": "^0.563.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "conf": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
   }
 }
