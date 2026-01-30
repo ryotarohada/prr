@@ -1,25 +1,19 @@
-import { execSync } from 'child_process';
+import notifier from 'node-notifier';
 import type { PullRequest } from '../types/index.js';
 
-function escapeAppleScript(str: string): string {
-  return str.replace(/["\\]/g, '\\$&').replace(/'/g, "'\"'\"'");
-}
-
-function showNotification(title: string, body: string, subtitle?: string): void {
-  // macOS notification center via osascript
-  let script = `display notification "${escapeAppleScript(body)}" with title "${escapeAppleScript(title)}"`;
-
-  if (subtitle) {
-    script += ` subtitle "${escapeAppleScript(subtitle)}"`;
-  }
-
-  script += ' sound name "default"';
-
-  try {
-    execSync(`osascript -e '${script}'`, { stdio: 'ignore' });
-  } catch {
-    // Silently fail if notifications don't work
-  }
+function showNotification(title: string, message: string, subtitle?: string, url?: string): void {
+  notifier.notify(
+    {
+      title,
+      message,
+      subtitle,
+      sound: true,
+      open: url,
+    },
+    () => {
+      // Silently ignore callback errors
+    }
+  );
 }
 
 const knownPRIds = new Set<number>();
@@ -30,7 +24,7 @@ export function notifyNewPRs(pendingPRs: PullRequest[]): void {
 
   // Notify for each new PR
   for (const pr of newPRs) {
-    showNotification('prr', pr.title, `${pr.repository} #${pr.number}`);
+    showNotification('prr', pr.title, `${pr.repository} #${pr.number}`, pr.url);
     knownPRIds.add(pr.id);
   }
 

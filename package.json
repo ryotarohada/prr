@@ -35,10 +35,12 @@
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
+    "node-notifier": "^10.0.1",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/node-notifier": "^8.0.5",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   }
