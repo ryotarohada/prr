@@ -6,7 +6,8 @@ Pull Request Reminder - CLI tool for tracking GitHub PRs awaiting your review.
 
 - Watch mode: continuously monitors PRs and sends macOS notifications
 - View pending review PRs in your terminal
-- Desktop notifications for new PRs
+- Desktop notifications for new PRs (click to open PR in browser)
+- Reminder notifications for pending PRs
 - Simple configuration management
 
 ## Installation
@@ -38,6 +39,8 @@ repositories:
   - org/another-repo
 interval: 5
 showRepository: true
+reminder: true
+reminderInterval: 30
 ```
 
 ## Usage
@@ -68,6 +71,8 @@ prr status
 | `prr config repos`           | List repositories     |
 | `prr config interval <min>`  | Set check interval    |
 | `prr config show-repo <on\|off>` | Toggle repo name display |
+| `prr config reminder <on\|off>` | Toggle reminder notifications |
+| `prr config reminder-interval <min>` | Set reminder interval |
 | `prr config clear`           | Clear configuration   |
 | `prr --help`                 | Show help             |
 

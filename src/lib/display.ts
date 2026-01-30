@@ -162,6 +162,8 @@ export function showHelp(): void {
         ['prr config repos', 'List repositories'],
         ['prr config interval', 'Set check interval'],
         ['prr config show-repo', 'Toggle repo name display'],
+        ['prr config reminder', 'Toggle reminder on/off'],
+        ['prr config reminder-interval', 'Set reminder interval (min)'],
         ['prr config clear', 'Clear configuration'],
       ],
     },
@@ -179,8 +181,8 @@ export function showHelp(): void {
     console.log(`${colors.magenta}${box.vertical}${colors.reset}  ${colors.bold}${section.title}${colors.reset}${' '.repeat(innerWidth - section.title.length - 3)}${colors.magenta}${box.vertical}${colors.reset}`);
 
     for (const [cmd, desc] of section.items) {
-      const line = `    ${colors.cyan}${cmd.padEnd(22)}${colors.reset}${colors.dim}${desc}${colors.reset}`;
-      const padding = innerWidth - 4 - 22 - desc.length - 1;
+      const line = `    ${colors.cyan}${cmd.padEnd(28)}${colors.reset}${colors.dim}${desc}${colors.reset}`;
+      const padding = innerWidth - 4 - 28 - desc.length - 1;
       console.log(`${colors.magenta}${box.vertical}${colors.reset}${line}${' '.repeat(Math.max(0, padding))}${colors.magenta}${box.vertical}${colors.reset}`);
     }
 

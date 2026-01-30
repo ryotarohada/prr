@@ -75,6 +75,14 @@ export async function configCommand(): Promise<void> {
     const interval = parseInt(intervalStr, 10) || 5;
     config.setInterval(Math.max(1, interval));
 
+    // 4. Reminder
+    log.info('\nStep 4: Reminder Settings');
+    log.dim('Re-notify about pending PRs after a set time\n');
+    const reminderStr = await prompt('Reminder interval in minutes (default: 30): ');
+    const reminderInterval = parseInt(reminderStr, 10) || 30;
+    config.setReminderInterval(Math.max(1, reminderInterval));
+    config.setReminder(true);
+
     close();
 
     log.success('\nConfiguration complete!');
@@ -189,6 +197,39 @@ export function setShowRepoCommand(value: string | undefined): void {
   const show = value === 'on';
   config.setShowRepository(show);
   log.success(`Show repository: ${show ? 'on' : 'off'}`);
+}
+
+export function setReminderCommand(value: string | undefined): void {
+  if (!value) {
+    const current = config.getReminder();
+    log.info(`Reminder: ${current ? 'on' : 'off'}`);
+    return;
+  }
+
+  if (value !== 'on' && value !== 'off') {
+    log.error('Usage: prr config reminder <on|off>');
+    process.exit(1);
+  }
+
+  const enabled = value === 'on';
+  config.setReminder(enabled);
+  log.success(`Reminder: ${enabled ? 'on' : 'off'}`);
+}
+
+export function setReminderIntervalCommand(minutes: string | undefined): void {
+  if (!minutes) {
+    log.info(`Reminder interval: ${config.getReminderInterval()} minutes`);
+    return;
+  }
+
+  const interval = parseInt(minutes, 10);
+  if (isNaN(interval) || interval < 1) {
+    log.error('Invalid interval. Must be a positive number.');
+    process.exit(1);
+  }
+
+  config.setReminderInterval(interval);
+  log.success(`Reminder interval set to ${interval} minutes`);
 }
 
 export function clearConfigCommand(): void {

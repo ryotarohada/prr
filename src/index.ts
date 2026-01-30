@@ -11,6 +11,8 @@ import {
   listReposCommand,
   setIntervalCommand,
   setShowRepoCommand,
+  setReminderCommand,
+  setReminderIntervalCommand,
   clearConfigCommand,
 } from './commands/config.js';
 import { showHelp, showVersion, log } from './lib/display.js';
@@ -48,6 +50,12 @@ async function main(): Promise<void> {
           break;
         case 'show-repo':
           setShowRepoCommand(args[2]);
+          break;
+        case 'reminder':
+          setReminderCommand(args[2]);
+          break;
+        case 'reminder-interval':
+          setReminderIntervalCommand(args[2]);
           break;
         case 'clear':
           clearConfigCommand();

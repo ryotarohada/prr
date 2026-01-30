@@ -8,6 +8,8 @@ interface ConfigData {
   repositories: string[];
   interval: number;
   showRepository: boolean;
+  reminder: boolean;
+  reminderInterval: number;
 }
 
 const CONFIG_DIR = join(homedir(), '.config', 'prr');
@@ -18,6 +20,8 @@ const defaultConfig: ConfigData = {
   repositories: [],
   interval: 5,
   showRepository: true,
+  reminder: true,
+  reminderInterval: 30,
 };
 
 function ensureConfigDir(): void {
@@ -39,6 +43,8 @@ function readConfig(): ConfigData {
       repositories: data.repositories ?? defaultConfig.repositories,
       interval: data.interval ?? defaultConfig.interval,
       showRepository: data.showRepository ?? defaultConfig.showRepository,
+      reminder: data.reminder ?? defaultConfig.reminder,
+      reminderInterval: data.reminderInterval ?? defaultConfig.reminderInterval,
     };
   } catch {
     return { ...defaultConfig };
@@ -91,6 +97,20 @@ export const config = {
   setShowRepository: (show: boolean): void => {
     const data = readConfig();
     data.showRepository = show;
+    writeConfig(data);
+  },
+
+  getReminder: (): boolean => readConfig().reminder,
+  setReminder: (enabled: boolean): void => {
+    const data = readConfig();
+    data.reminder = enabled;
+    writeConfig(data);
+  },
+
+  getReminderInterval: (): number => readConfig().reminderInterval,
+  setReminderInterval: (minutes: number): void => {
+    const data = readConfig();
+    data.reminderInterval = Math.max(1, minutes);
     writeConfig(data);
   },
 
