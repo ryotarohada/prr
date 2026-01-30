@@ -31,6 +31,10 @@ export const log = {
   warn: (msg: string): void => { console.log(`${colors.yellow}!${colors.reset} ${msg}`); },
 };
 
+export function clearScreen(): void {
+  process.stdout.write('\x1b[2J\x1b[H');
+}
+
 function formatTimeAgo(dateString: string): string {
   const diffMs = Date.now() - new Date(dateString).getTime();
   const diffMins = Math.floor(diffMs / 60000);

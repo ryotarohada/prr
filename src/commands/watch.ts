@@ -1,7 +1,7 @@
 import { config } from '../lib/config.js';
 import { initOctokit, fetchPullRequests } from '../lib/github.js';
 import { notifyNewPRs, resetNotificationState } from '../lib/notifier.js';
-import { displayPRs, displayTimestamp, log } from '../lib/display.js';
+import { displayPRs, displayTimestamp, log, clearScreen } from '../lib/display.js';
 
 export async function watchCommand(): Promise<void> {
   if (!config.isConfigured()) {
@@ -16,13 +16,14 @@ export async function watchCommand(): Promise<void> {
   initOctokit(token);
   resetNotificationState();
 
-  log.info(`[prr] Watching for PRs... (checking every ${intervalMinutes} min)`);
-  log.info('[prr] Press Ctrl+C to stop\n');
-
   process.on('SIGINT', () => {
-    log.info('\n[prr] Stopping...');
+    console.log('\n');
+    log.info('[prr] Stopped');
     process.exit(0);
   });
+
+  clearScreen();
+  log.dim('[prr] Fetching PRs...');
 
   await checkAndDisplay(repositories);
 
@@ -32,18 +33,21 @@ export async function watchCommand(): Promise<void> {
 }
 
 async function checkAndDisplay(repositories: string[]): Promise<void> {
-  displayTimestamp(`Checking ${repositories.length} repositories...`);
-
   try {
     const prs = await fetchPullRequests(repositories);
 
     notifyNewPRs(prs.pending);
 
+    clearScreen();
+    log.dim(`[prr] Watching... (Ctrl+C to stop)\n`);
+
     if (prs.pending.length > 0) {
       displayPRs(prs.pending);
     } else {
-      displayTimestamp('No pending reviews');
+      log.success('No pending reviews!');
     }
+
+    displayTimestamp(`Last checked • ${repositories.length} repos`);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     log.error(`Error: ${message}`);
