@@ -32,7 +32,7 @@ export const log = {
 };
 
 export function clearScreen(): void {
-  process.stdout.write('\x1b[2J\x1b[H');
+  console.clear();
 }
 
 function formatTimeAgo(dateString: string): string {
@@ -179,5 +179,5 @@ export function showHelp(): void {
 }
 
 export function showVersion(): void {
-  console.log(`${colors.bold}prr${colors.reset} v0.2.2`);
+  console.log(`${colors.bold}prr${colors.reset} v0.2.3`);
 }
