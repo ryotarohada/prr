@@ -194,5 +194,5 @@ export function showHelp(): void {
 }
 
 export function showVersion(): void {
-  console.log(`${colors.bold}prr${colors.reset} v0.2.4`);
+  console.log(`${colors.bold}prr${colors.reset} v0.2.5`);
 }
