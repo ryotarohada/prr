@@ -12,14 +12,7 @@ Pull Request Reminder - CLI tool for tracking GitHub PRs awaiting your review.
 ## Installation
 
 ```bash
-# Clone and install
-git clone https://github.com/ryotarohada/prr.git
-cd prr
-pnpm install
-
-# Build and link globally
-pnpm build
-npm link
+npm install -g @ryotarohada/prr
 ```
 
 ## Setup
