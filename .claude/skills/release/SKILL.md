@@ -7,50 +7,53 @@ allowed-tools: Bash, Read, Edit
 
 # Release workflow
 
-npm パッケージの新バージョンをリリースする手順。
+Release a new npm package version.
 
-## 手順
+## Steps
 
-1. **バージョンをバンプ** (patch/minor/major から選択)
+1. **Bump version** (choose patch/minor/major)
+
    ```bash
    npm version patch  # or minor, major
    ```
 
-2. **display.ts のバージョンを更新**
-   - `src/lib/display.ts` の `showVersion()` 関数内のバージョン番号を更新
+2. **Update version in display.ts**
+   - Update version number in `showVersion()` function in `src/lib/display.ts`
 
-3. **ビルド**
+3. **Build**
+
    ```bash
    pnpm build
    ```
 
-4. **コミットを修正** (バージョン更新を含める)
+4. **Amend commit** (include version update)
+
    ```bash
    git add -A && git commit --amend --no-edit
    ```
 
-5. **タグを正しいコミットに付け直す**
+5. **Re-tag to correct commit**
+
    ```bash
-   # 現在のコミットハッシュを取得
    COMMIT=$(git rev-parse HEAD)
    VERSION=$(node -p "require('./package.json').version")
-
-   # 古いタグを削除して新しいタグを作成
    git tag -d v$VERSION
    git tag v$VERSION $COMMIT
    ```
 
-6. **npm に公開**
+6. **Publish to npm**
+
    ```bash
    npm publish --access public
    ```
 
-7. **git push (タグ含む)**
+7. **Push to git (with tags)**
+
    ```bash
    git push && git push origin v$VERSION
    ```
 
-## 注意事項
+## Notes
 
-- 公開前にユーザーの確認を得ること
-- タグは `npm version` が作るものではなく、最終コミットに付けること
+- Get user confirmation before publishing
+- Tag the final commit, not the one created by `npm version`
