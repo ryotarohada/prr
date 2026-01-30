@@ -24,13 +24,6 @@ export interface PRGroups {
   approved: PullRequest[];
 }
 
-export interface Config {
-  githubToken: string;
-  repositories: string[];
-  autoRefreshInterval: number;
-  reminderEnabled: boolean;
-}
-
 export interface TokenValidationResult {
   valid: boolean;
   user?: { login: string };

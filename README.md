@@ -27,6 +27,18 @@ You'll need a GitHub Personal Access Token:
 - Required scopes: `repo`, `read:user`
 - [Create token here](https://github.com/settings/tokens)
 
+## Configuration
+
+Config file: `~/.config/prr/config.yml`
+
+```yaml
+token: ghp_xxxxx
+repositories:
+  - owner/repo
+  - org/another-repo
+interval: 5
+```
+
 ## Usage
 
 ```bash
@@ -71,7 +83,7 @@ pnpm build
 
 - TypeScript
 - Octokit (GitHub API)
-- conf (configuration storage)
+- YAML (configuration)
 
 ## License
 

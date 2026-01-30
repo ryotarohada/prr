@@ -33,5 +33,8 @@ export async function statusCommand(): Promise<void> {
 
   console.log();
   log.info(`Check interval: ${interval} minutes`);
+
+  console.log();
+  log.dim(`Config: ${config.getPath()}`);
   console.log();
 }

@@ -1,51 +1,97 @@
-import Conf from 'conf';
-import type { Config } from '../types/index.js';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { homedir } from 'os';
+import { join, dirname } from 'path';
+import { parse, stringify } from 'yaml';
 
-const schema = {
-  githubToken: { type: 'string' as const, default: '' },
-  repositories: { type: 'array' as const, default: [] as string[], items: { type: 'string' as const } },
-  autoRefreshInterval: { type: 'number' as const, default: 5 },
-  reminderEnabled: { type: 'boolean' as const, default: true },
+interface ConfigData {
+  token: string;
+  repositories: string[];
+  interval: number;
+}
+
+const CONFIG_DIR = join(homedir(), '.config', 'prr');
+const CONFIG_PATH = join(CONFIG_DIR, 'config.yml');
+
+const defaultConfig: ConfigData = {
+  token: '',
+  repositories: [],
+  interval: 5,
 };
 
-const store = new Conf<Config>({
-  projectName: 'prr',
-  schema,
-});
+function ensureConfigDir(): void {
+  if (!existsSync(CONFIG_DIR)) {
+    mkdirSync(CONFIG_DIR, { recursive: true });
+  }
+}
+
+function readConfig(): ConfigData {
+  if (!existsSync(CONFIG_PATH)) {
+    return { ...defaultConfig };
+  }
+
+  try {
+    const content = readFileSync(CONFIG_PATH, 'utf-8');
+    const data = parse(content) as Partial<ConfigData>;
+    return {
+      token: data.token ?? defaultConfig.token,
+      repositories: data.repositories ?? defaultConfig.repositories,
+      interval: data.interval ?? defaultConfig.interval,
+    };
+  } catch {
+    return { ...defaultConfig };
+  }
+}
+
+function writeConfig(data: ConfigData): void {
+  ensureConfigDir();
+  const content = stringify(data);
+  writeFileSync(CONFIG_PATH, content, 'utf-8');
+}
 
 export const config = {
-  getToken: (): string => store.get('githubToken'),
-  setToken: (token: string): void => { store.set('githubToken', token); },
+  getPath: (): string => CONFIG_PATH,
 
-  getRepositories: (): string[] => store.get('repositories'),
-  setRepositories: (repos: string[]): void => { store.set('repositories', repos); },
+  getToken: (): string => readConfig().token,
+  setToken: (token: string): void => {
+    const data = readConfig();
+    data.token = token;
+    writeConfig(data);
+  },
+
+  getRepositories: (): string[] => readConfig().repositories,
+  setRepositories: (repos: string[]): void => {
+    const data = readConfig();
+    data.repositories = repos;
+    writeConfig(data);
+  },
   addRepository: (repo: string): void => {
-    const repos = store.get('repositories');
-    if (!repos.includes(repo)) {
-      repos.push(repo);
-      store.set('repositories', repos);
+    const data = readConfig();
+    if (!data.repositories.includes(repo)) {
+      data.repositories.push(repo);
+      writeConfig(data);
     }
   },
   removeRepository: (repo: string): void => {
-    const repos = store.get('repositories').filter((r) => r !== repo);
-    store.set('repositories', repos);
+    const data = readConfig();
+    data.repositories = data.repositories.filter((r) => r !== repo);
+    writeConfig(data);
   },
 
-  getInterval: (): number => store.get('autoRefreshInterval'),
-  setInterval: (minutes: number): void => { store.set('autoRefreshInterval', Math.max(1, minutes)); },
+  getInterval: (): number => readConfig().interval,
+  setInterval: (minutes: number): void => {
+    const data = readConfig();
+    data.interval = Math.max(1, minutes);
+    writeConfig(data);
+  },
 
   isConfigured: (): boolean => {
-    const token = store.get('githubToken');
-    const repos = store.get('repositories');
-    return Boolean(token && repos.length > 0);
+    const data = readConfig();
+    return Boolean(data.token && data.repositories.length > 0);
   },
 
-  getAll: (): Config => ({
-    githubToken: store.get('githubToken'),
-    repositories: store.get('repositories'),
-    autoRefreshInterval: store.get('autoRefreshInterval'),
-    reminderEnabled: store.get('reminderEnabled'),
-  }),
+  getAll: (): ConfigData => readConfig(),
 
-  clear: (): void => { store.clear(); },
+  clear: (): void => {
+    writeConfig({ ...defaultConfig });
+  },
 };
