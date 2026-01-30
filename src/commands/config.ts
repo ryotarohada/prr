@@ -174,6 +174,23 @@ export function setIntervalCommand(minutes: string | undefined): void {
   log.success(`Check interval set to ${interval} minutes`);
 }
 
+export function setShowRepoCommand(value: string | undefined): void {
+  if (!value) {
+    const current = config.getShowRepository();
+    log.info(`Show repository: ${current ? 'on' : 'off'}`);
+    return;
+  }
+
+  if (value !== 'on' && value !== 'off') {
+    log.error('Usage: prr config show-repo <on|off>');
+    process.exit(1);
+  }
+
+  const show = value === 'on';
+  config.setShowRepository(show);
+  log.success(`Show repository: ${show ? 'on' : 'off'}`);
+}
+
 export function clearConfigCommand(): void {
   config.clear();
   log.success('Configuration cleared');

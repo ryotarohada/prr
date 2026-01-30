@@ -15,21 +15,23 @@ export async function listCommand(): Promise<void> {
 
   log.dim(`Fetching PRs from ${repositories.length} repositories...`);
 
+  const displayOptions = { showRepository: config.getShowRepository() };
+
   try {
     const prs = await fetchPullRequests(repositories);
 
     if (prs.pending.length > 0) {
-      displayPRs(prs.pending, 'Pending Review');
+      displayPRs(prs.pending, 'Pending Review', displayOptions);
     } else {
       log.success('No pending reviews!');
     }
 
     if (prs.changesRequested.length > 0) {
-      displayPRs(prs.changesRequested, 'Changes Requested');
+      displayPRs(prs.changesRequested, 'Changes Requested', displayOptions);
     }
 
     if (prs.approved.length > 0) {
-      displayPRs(prs.approved, 'Approved');
+      displayPRs(prs.approved, 'Approved', displayOptions);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

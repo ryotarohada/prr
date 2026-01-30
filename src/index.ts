@@ -10,6 +10,7 @@ import {
   rmRepoCommand,
   listReposCommand,
   setIntervalCommand,
+  setShowRepoCommand,
   clearConfigCommand,
 } from './commands/config.js';
 import { showHelp, showVersion, log } from './lib/display.js';
@@ -44,6 +45,9 @@ async function main(): Promise<void> {
           break;
         case 'interval':
           setIntervalCommand(args[2]);
+          break;
+        case 'show-repo':
+          setShowRepoCommand(args[2]);
           break;
         case 'clear':
           clearConfigCommand();

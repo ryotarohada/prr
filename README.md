@@ -37,6 +37,7 @@ repositories:
   - owner/repo
   - org/another-repo
 interval: 5
+showRepository: true
 ```
 
 ## Usage
@@ -66,6 +67,7 @@ prr status
 | `prr config rm-repo <repo>`  | Remove repository     |
 | `prr config repos`           | List repositories     |
 | `prr config interval <min>`  | Set check interval    |
+| `prr config show-repo <on\|off>` | Toggle repo name display |
 | `prr config clear`           | Clear configuration   |
 | `prr --help`                 | Show help             |
 

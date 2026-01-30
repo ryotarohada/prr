@@ -7,6 +7,7 @@ interface ConfigData {
   token: string;
   repositories: string[];
   interval: number;
+  showRepository: boolean;
 }
 
 const CONFIG_DIR = join(homedir(), '.config', 'prr');
@@ -16,6 +17,7 @@ const defaultConfig: ConfigData = {
   token: '',
   repositories: [],
   interval: 5,
+  showRepository: true,
 };
 
 function ensureConfigDir(): void {
@@ -36,6 +38,7 @@ function readConfig(): ConfigData {
       token: data.token ?? defaultConfig.token,
       repositories: data.repositories ?? defaultConfig.repositories,
       interval: data.interval ?? defaultConfig.interval,
+      showRepository: data.showRepository ?? defaultConfig.showRepository,
     };
   } catch {
     return { ...defaultConfig };
@@ -81,6 +84,13 @@ export const config = {
   setInterval: (minutes: number): void => {
     const data = readConfig();
     data.interval = Math.max(1, minutes);
+    writeConfig(data);
+  },
+
+  getShowRepository: (): boolean => readConfig().showRepository,
+  setShowRepository: (show: boolean): void => {
+    const data = readConfig();
+    data.showRepository = show;
     writeConfig(data);
   },
 

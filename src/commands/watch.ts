@@ -42,7 +42,7 @@ async function checkAndDisplay(repositories: string[]): Promise<void> {
     log.dim(`[prr] Watching... (Ctrl+C to stop)\n`);
 
     if (prs.pending.length > 0) {
-      displayPRs(prs.pending);
+      displayPRs(prs.pending, 'Pending Review', { showRepository: config.getShowRepository() });
     } else {
       log.success('No pending reviews!');
     }

@@ -89,7 +89,12 @@ function truncate(text: string, maxLength: number): string {
   return text.slice(0, maxLength - 1) + '…';
 }
 
-export function displayPRs(prs: PullRequest[], title = 'Pending Review'): void {
+interface DisplayOptions {
+  showRepository?: boolean;
+}
+
+export function displayPRs(prs: PullRequest[], title = 'Pending Review', options: DisplayOptions = {}): void {
+  const { showRepository = true } = options;
   const width = getWidth();
   const innerWidth = width - 4;
 
@@ -100,8 +105,17 @@ export function displayPRs(prs: PullRequest[], title = 'Pending Review'): void {
   for (const pr of prs) {
     const draft = pr.draft ? `${colors.dim}[D]${colors.reset} ` : '';
     const timeAgo = formatTimeAgo(pr.updatedAt);
-    const meta = `${colors.cyan}${pr.repository}${colors.reset} ${colors.yellow}@${pr.author.login}${colors.reset} ${colors.dim}${timeAgo}${colors.reset}`;
-    const metaLen = pr.repository.length + pr.author.login.length + timeAgo.length + 3;
+
+    let meta: string;
+    let metaLen: number;
+
+    if (showRepository) {
+      meta = `${colors.cyan}${pr.repository}${colors.reset} ${colors.yellow}@${pr.author.login}${colors.reset} ${colors.dim}${timeAgo}${colors.reset}`;
+      metaLen = pr.repository.length + pr.author.login.length + timeAgo.length + 3;
+    } else {
+      meta = `${colors.yellow}@${pr.author.login}${colors.reset} ${colors.dim}${timeAgo}${colors.reset}`;
+      metaLen = pr.author.login.length + timeAgo.length + 2;
+    }
 
     const prefix = `#${pr.number} `;
     const prefixLen = prefix.length + (pr.draft ? 4 : 0);
@@ -147,6 +161,7 @@ export function showHelp(): void {
         ['prr config rm-repo', 'Remove repository'],
         ['prr config repos', 'List repositories'],
         ['prr config interval', 'Set check interval'],
+        ['prr config show-repo', 'Toggle repo name display'],
         ['prr config clear', 'Clear configuration'],
       ],
     },
