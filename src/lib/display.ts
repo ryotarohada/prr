@@ -175,5 +175,5 @@ export function showHelp(): void {
 }
 
 export function showVersion(): void {
-  console.log(`${colors.bold}prr${colors.reset} v0.2.0`);
+  console.log(`${colors.bold}prr${colors.reset} v0.2.1`);
 }
