@@ -1,6 +1,6 @@
 {
   "name": "@ryotarohada/prr",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Pull Request Reminder - CLI tool for tracking PRs awaiting your review",
   "type": "module",
   "bin": {
