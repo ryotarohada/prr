@@ -7,8 +7,20 @@ const colors = {
   green: '\x1b[32m',
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
+  magenta: '\x1b[35m',
   red: '\x1b[31m',
   cyan: '\x1b[36m',
+};
+
+const box = {
+  topLeft: '┌',
+  topRight: '┐',
+  bottomLeft: '└',
+  bottomRight: '┘',
+  horizontal: '─',
+  vertical: '│',
+  leftT: '├',
+  rightT: '┤',
 };
 
 export const log = {
@@ -31,23 +43,71 @@ function formatTimeAgo(dateString: string): string {
   return `${diffDays}d ago`;
 }
 
-export function displayPRs(prs: PullRequest[], title = 'Pending Review'): void {
-  const width = Math.min(process.stdout.columns || 60, 70);
+function getWidth(): number {
+  return Math.min(process.stdout.columns || 80, 100);
+}
 
-  console.log();
-  console.log(`${colors.bold}${title} (${prs.length})${colors.reset}`);
-  console.log('─'.repeat(width));
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, '');
+}
 
-  for (const pr of prs) {
-    const draft = pr.draft ? `${colors.dim}[DRAFT]${colors.reset} ` : '';
-    const timeAgo = formatTimeAgo(pr.updatedAt);
+function visibleLength(str: string): number {
+  return stripAnsi(str).length;
+}
 
-    console.log(`${colors.cyan}#${pr.number}${colors.reset} ${draft}${pr.title}`);
-    console.log(`    ${colors.blue}${pr.repository}${colors.reset} · ${colors.dim}@${pr.author.login} · ${timeAgo}${colors.reset}`);
-    console.log();
+function drawBox(title: string, lines: string[]): void {
+  const width = getWidth();
+  const innerWidth = width - 2;
+
+  // Top border with title
+  const titleText = ` ${title} `;
+  const remainingWidth = innerWidth - titleText.length;
+  const leftPad = Math.floor(remainingWidth / 2);
+  const rightPad = remainingWidth - leftPad;
+
+  console.log(
+    `${colors.magenta}${box.topLeft}${box.horizontal.repeat(leftPad)}${colors.reset}${colors.bold}${titleText}${colors.reset}${colors.magenta}${box.horizontal.repeat(rightPad)}${box.topRight}${colors.reset}`
+  );
+
+  // Content
+  for (const line of lines) {
+    const visible = visibleLength(line);
+    const padding = innerWidth - visible - 2;
+    console.log(`${colors.magenta}${box.vertical}${colors.reset} ${line}${' '.repeat(Math.max(0, padding))} ${colors.magenta}${box.vertical}${colors.reset}`);
   }
 
-  console.log('─'.repeat(width));
+  // Bottom border
+  console.log(`${colors.magenta}${box.bottomLeft}${box.horizontal.repeat(innerWidth)}${box.bottomRight}${colors.reset}`);
+}
+
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength - 1) + '…';
+}
+
+export function displayPRs(prs: PullRequest[], title = 'Pending Review'): void {
+  const width = getWidth();
+  const innerWidth = width - 4;
+
+  console.log();
+
+  const lines: string[] = [];
+
+  for (const pr of prs) {
+    const draft = pr.draft ? `${colors.dim}[D]${colors.reset} ` : '';
+    const timeAgo = formatTimeAgo(pr.updatedAt);
+    const meta = `${colors.cyan}${pr.repository}${colors.reset} ${colors.yellow}@${pr.author.login}${colors.reset} ${colors.dim}${timeAgo}${colors.reset}`;
+    const metaLen = pr.repository.length + pr.author.login.length + timeAgo.length + 3;
+
+    const prefix = `#${pr.number} `;
+    const prefixLen = prefix.length + (pr.draft ? 4 : 0);
+    const maxTitleLen = innerWidth - prefixLen - metaLen - 3;
+    const truncatedTitle = truncate(pr.title, Math.max(20, maxTitleLen));
+
+    lines.push(`${colors.cyan}#${pr.number}${colors.reset} ${draft}${truncatedTitle}  ${meta}`);
+  }
+
+  drawBox(`${title} (${prs.length})`, lines);
 }
 
 export function displayTimestamp(message: string): void {
@@ -56,30 +116,64 @@ export function displayTimestamp(message: string): void {
 }
 
 export function showHelp(): void {
-  console.log(`
-${colors.bold}prr${colors.reset} - Pull Request Reminder
+  const width = getWidth();
+  const innerWidth = width - 2;
 
-${colors.bold}Usage:${colors.reset}
-  prr                          Start watch mode (default)
-  prr watch                    Start watch mode
-  prr list                     List pending PRs once
-  prr status                   Show current configuration
+  console.log();
+  console.log(`${colors.magenta}${box.topLeft}${box.horizontal.repeat(innerWidth)}${box.topRight}${colors.reset}`);
+  console.log(`${colors.magenta}${box.vertical}${colors.reset}${colors.bold}  prr${colors.reset} - Pull Request Reminder${' '.repeat(innerWidth - 29)}${colors.magenta}${box.vertical}${colors.reset}`);
+  console.log(`${colors.magenta}${box.leftT}${box.horizontal.repeat(innerWidth)}${box.rightT}${colors.reset}`);
 
-${colors.bold}Configuration:${colors.reset}
-  prr config                   Interactive setup
-  prr config set-token         Set GitHub token
-  prr config add-repo <repo>   Add repository (owner/repo)
-  prr config rm-repo <repo>    Remove repository
-  prr config repos             List configured repositories
-  prr config interval <min>    Set check interval (minutes)
-  prr config clear             Clear all configuration
+  const sections = [
+    {
+      title: 'Usage',
+      items: [
+        ['prr', 'Start watch mode (default)'],
+        ['prr watch', 'Start watch mode'],
+        ['prr list', 'List pending PRs once'],
+        ['prr status', 'Show current configuration'],
+      ],
+    },
+    {
+      title: 'Configuration',
+      items: [
+        ['prr config', 'Interactive setup'],
+        ['prr config set-token', 'Set GitHub token'],
+        ['prr config add-repo', 'Add repository'],
+        ['prr config rm-repo', 'Remove repository'],
+        ['prr config repos', 'List repositories'],
+        ['prr config interval', 'Set check interval'],
+        ['prr config clear', 'Clear configuration'],
+      ],
+    },
+    {
+      title: 'Options',
+      items: [
+        ['-h, --help', 'Show this help'],
+        ['-v, --version', 'Show version'],
+      ],
+    },
+  ];
 
-${colors.bold}Options:${colors.reset}
-  -h, --help                   Show this help
-  -v, --version                Show version
-`);
+  for (let s = 0; s < sections.length; s++) {
+    const section = sections[s];
+    console.log(`${colors.magenta}${box.vertical}${colors.reset}  ${colors.bold}${section.title}${colors.reset}${' '.repeat(innerWidth - section.title.length - 3)}${colors.magenta}${box.vertical}${colors.reset}`);
+
+    for (const [cmd, desc] of section.items) {
+      const line = `    ${colors.cyan}${cmd.padEnd(22)}${colors.reset}${colors.dim}${desc}${colors.reset}`;
+      const padding = innerWidth - 4 - 22 - desc.length - 1;
+      console.log(`${colors.magenta}${box.vertical}${colors.reset}${line}${' '.repeat(Math.max(0, padding))}${colors.magenta}${box.vertical}${colors.reset}`);
+    }
+
+    if (s < sections.length - 1) {
+      console.log(`${colors.magenta}${box.vertical}${colors.reset}${' '.repeat(innerWidth)}${colors.magenta}${box.vertical}${colors.reset}`);
+    }
+  }
+
+  console.log(`${colors.magenta}${box.bottomLeft}${box.horizontal.repeat(innerWidth)}${box.bottomRight}${colors.reset}`);
+  console.log();
 }
 
 export function showVersion(): void {
-  console.log('prr v1.0.0');
+  console.log(`${colors.bold}prr${colors.reset} v0.2.0`);
 }
